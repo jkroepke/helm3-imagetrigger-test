@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "imagetrigger-test.fullname" . }}
+  labels:
+    {{- include "imagetrigger-test.labels" . | nindent 4 }}
+  annotations:
+    image.openshift.io/triggers: |
+      [{
+        "from": {
+          "kind": "ImageStreamTag",
+          "name": "busybox:latest"
+        },
+        "fieldPath": "spec.template.spec.containers[?(@.name==\"{{ .Chart.Name }}\")].image"
+      }]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "imagetrigger-test.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "imagetrigger-test.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: " "
+          stdin: true
+          command:
+            - /bin/cat
